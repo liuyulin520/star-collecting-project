@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Star-Collecting Project 星光收集站</title>
+<style>
+  html,body{margin:0;height:100%;background:#050510;overflow:hidden;cursor:pointer;
+    font-family:"Microsoft YaHei",sans-serif;}
+  #sky{position:fixed;inset:0;}
+  /* 背景零星微光 */
+  .dust{position:absolute;border-radius:50%;background:#9db4ff;opacity:.35;
+    animation:tw 3s ease-in-out infinite alternate;}
+  @keyframes tw{from{opacity:.15}to{opacity:.5}}
+  /* 七颗主星光 */
+  .star{position:absolute;width:26px;height:26px;left:50%;top:50%;
+    transform:translate(-50%,-50%);transition:all 1.2s cubic-bezier(.2,.8,.2,1);}
+  .star svg{width:100%;height:100%;filter:drop-shadow(0 0 12px #ffd76a);}
+  .label{position:absolute;white-space:nowrap;color:#ffe9a8;font-size:15px;
+    letter-spacing:1px;text-shadow:0 0 8px #ffb84d;opacity:0;transition:opacity .8s;}
+  /* 汇聚后的金色主光芒 */
+  #beam{position:absolute;left:50%;top:50%;width:0;height:0;transform:translate(-50%,-50%);
+    border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,#fff8dc 0%,#ffd76a 30%,rgba(255,183,77,.35) 55%,transparent 75%);
+    opacity:0;}
+  #beam.on{animation:boom 2.2s ease-out forwards;}
+  @keyframes boom{
+    0%{opacity:0;width:0;height:0;}
+    35%{opacity:1;width:60vmin;height:60vmin;}
+    100%{opacity:.9;width:110vmin;height:110vmin;}}
+  .ray{position:absolute;left:50%;top:50%;width:2px;height:0;background:linear-gradient(#fff3c4,transparent);
+    transform-origin:top center;opacity:0;}
+  #beam.on ~ .ray{animation:raygrow 1.8s .3s ease-out forwards;}
+  @keyframes raygrow{0%{opacity:0;height:0}40%{opacity:.9;height:46vmin}100%{opacity:0;height:60vmin}}
+  #hint{position:fixed;bottom:26px;width:100%;text-align:center;color:#8fa3d9;
+    font-size:14px;letter-spacing:2px;}
+</style>
+</head>
+<body>
+<div id="sky">
+  <div id="beam"></div>
+  <div class="ray" style="transform:rotate(0deg)"></div>
+  <div class="ray" style="transform:rotate(45deg)"></div>
+  <div class="ray" style="transform:rotate(90deg)"></div>
+  <div class="ray" style="transform:rotate(135deg)"></div>
+  <div class="ray" style="transform:rotate(180deg)"></div>
+  <div class="ray" style="transform:rotate(225deg)"></div>
+  <div class="ray" style="transform:rotate(270deg)"></div>
+  <div class="ray" style="transform:rotate(315deg)"></div>
+</div>
+<div id="hint">Click to collect starlight · 每完成一个任务点击一次</div>
+<script>
+var words=["I · Facts & Deeds","N · Language Toolbox","S · Simulation & Speech",
+  "P · Critical Thinking","I · Interview & Discovery","R · Record & Creation",
+  "E · Exhibit & Reflection"];
+var colors=["#ffd76a","#ffe9a8","#ffc94d","#fff3c4","#ffb84d","#ffe27a","#ffd76a"];
+/* 背景微光 */
+for(var i=0;i<60;i++){
+  var d=document.createElement("div");d.className="dust";
+  var s=Math.random()*3+1;
+  d.style.cssText="width:"+s+"px;height:"+s+"px;left:"+Math.random()*100+"%;top:"+Math.random()*100+
+    "%;animation-delay:"+Math.random()*3+"s";
+  document.getElementById("sky").appendChild(d);
+}
+var n=0;
+document.body.addEventListener("click",function(){
+  if(n>=7)return;
+  n++;
+  var st=document.createElement("div");st.className="star";
+  /* 七颗星分布在夜空四周，最后留出中心给主光芒 */
+  var ang=(n-1)/7*Math.PI*2-Math.PI/2;
+  var x=50+38*Math.cos(ang), y=42+30*Math.sin(ang);
+  st.innerHTML="<svg viewBox='0 0 24 24'><path fill='"+colors[n-1]+"' d='M12 1l2.6 7.2L22 9l-5.5 4.6L18.5 22 12 17.6 5.5 22l2-8.4L2 9l7.4-.8z'/></svg>";
+  st.style.left=x+"%";st.style.top=y+"%";
+  st.style.transform="translate(-50%,-50%) scale(0) rotate(-180deg)";
+  document.getElementById("sky").appendChild(st);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    st.style.transform="translate(-50%,-50%) scale(1.4) rotate(0deg)";});});
+  var lb=document.createElement("div");lb.className="label";
+  lb.textContent=words[n-1];
+  lb.style.left="calc("+x+"% + 24px)";lb.style.top="calc("+y+"% - 10px)";
+  document.getElementById("sky").appendChild(lb);
+  setTimeout(function(){lb.style.opacity=1;},600);
+  if(n===7){
+    document.getElementById("hint").style.opacity=0;
+    /* 七星飞向中心汇聚 */
+    setTimeout(function(){
+      document.querySelectorAll(".star").forEach(function(s){
+        s.style.left="50%";s.style.top="50%";s.style.opacity="0";});
+      document.querySelectorAll(".label").forEach(function(l){l.style.opacity=0;});
+      setTimeout(function(){document.getElementById("beam").classList.add("on");},1100);
+    },1500);
+  }
+});
+</script>
+</body>
+</html>
